@@ -18,6 +18,25 @@ I will collect the data in 2 different queries - one for the table schemas and t
 - Now we will create a new column to get the schema of the enttity. You will not be able to get this via the GUI and so create a Custom column and enter the formula Table.Schema([Data.1])
   ![image](https://github.com/datawings/DataflowSchemaSampling/assets/61468624/92e7e60a-e06a-4e34-b048-5a5b0b42c1a6)
 - Now expand the newly created column and choose Name and Kind as columns for expansion. Name is the column name and Kind is the column data type
+- Remove unwanted columns and now you have the schema information of all dataflows in the selected workspace
+  
+  Here is the Power Query that I used . Replace <workspace-id> with the workspace id of yours
+  ``` PQ
+  let
+   Source = PowerPlatform.Dataflows([]),
+   #"Navigation 1" = Source{[Id = "Workspaces"]}[Data],
+   #"Navigation 2" = #"Navigation 1"{[workspaceId = <workspace-id>]}[Data],
+   #"Removed other columns" = Table.SelectColumns(#"Navigation 2", {"dataflowName", "Data"}),
+   #"Expanded Data" = Table.ExpandTableColumn(#"Removed other columns", "Data", {"Data", "entityName"}, {"tabledata", "entityName"}),
+   #"Added custom" = Table.AddColumn(#"Expanded Data", "ListCols", each Table.Schema([tabledata])),
+   #"Expanded ListCols" = Table.ExpandTableColumn(#"Added custom", "ListCols", {"Name", "Kind"}, {"Name", "Kind"}),
+   #"Removed columns" = Table.RemoveColumns(#"Expanded ListCols", {"tabledata"}),
+   #"Renamed columns" = Table.RenameColumns(#"Removed columns", {{"Name", "columnName"}}),
+   #"Changed column type" = Table.TransformColumnTypes(#"Renamed columns", {{"dataflowName", type text}, {"entityName", type text}, {"columnName", type text}, {"Kind", type text}})
+  in
+   #"Changed column type"
+  ```
+  
 #### Row sampling 
 - In this query, we will try to get N number of rows from each of the tables inside the dataflows in the workspace
 - Steps to follow is the same as in the previous query, till we get the column [Data.1]
@@ -28,6 +47,24 @@ I will collect the data in 2 different queries - one for the table schemas and t
  ![image](https://github.com/datawings/DataflowSchemaSampling/assets/61468624/f3809a7c-9feb-4c5c-a12b-7e06e74fb18b)
 - Now simple expand the newly created column and choose Attribute and Value as the columns for expansion.
 - We now have the table with all the dataflow names, entity names, column names in each of those entities and also N rows from each of those entities
+Here is the PowerQuery code for the above steps. Replace <workspace-id> with the workspace id of your choice
 
+```PQ
+let
+  Source = PowerPlatform.Dataflows([]),
+  #"Navigation 1" = Source{[Id = "Workspaces"]}[Data],
+  #"Navigation 2" = #"Navigation 1"{[workspaceId = <workspace-d>]}[Data],
+  #"Removed other columns" = Table.SelectColumns(#"Navigation 2", {"dataflowName", "Data"}),
+  #"Expanded Data" = Table.ExpandTableColumn(#"Removed other columns", "Data", {"entity", "Data"}, {"entity", "Data.1"}),
+  #"Added custom" = Table.AddColumn(#"Expanded Data", "Top", each Table.FirstN([Data.1], 10)),
+  #"Removed columns" = Table.RemoveColumns(#"Added custom", {"Data.1"}),
+  #"Added custom 1" = Table.AddColumn(#"Removed columns", "Custom", each Table.UnpivotOtherColumns([Top], {}, "Atrribute", "Value")),
+  #"Expanded Custom" = Table.ExpandTableColumn(#"Added custom 1", "Custom", {"Atrribute", "Value"}, {"Atrribute", "Value"}),
+  #"Removed columns 1" = Table.RemoveColumns(#"Expanded Custom", {"Top"}),
+  #"Changed column type" = Table.TransformColumnTypes(#"Removed columns 1", {{"dataflowName", type text}, {"entity", type text}, {"Atrribute", type text}, {"Value", type text}})
+in
+  #"Changed column type"
 
+```
 
+With that, we have the data required for the overview report. Please be aware that this is a high level report only and won't be able to see every single data inside the tables.
