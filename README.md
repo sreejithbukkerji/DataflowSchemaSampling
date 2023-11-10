@@ -3,7 +3,7 @@ Power BI dataflow workspace documentation of the dataflows and the entity schema
 ## Use case 
 Imagine you have a Power BI workspace with dozens of dataflows created by your team. Some of these dataflows might be using sensitive data that should be restricted for the wider audience. You would like to have a high level overview of all the dataflows in that particular workspace. The overview should be able to show all the dataflows in that workspace, the entities in each of the dataflow, the columns in each of the entity , the data type of those columns and finally a few rows of the actual data from all the tables.
 ## Solution
-###Create a Power BI report that gives you this overview.
+#### Create a Power BI report that gives you this overview.
 I will collect the data in 2 different queries - one for the table schemas and the second one for sampling a few rows from the tables
 - Use PowerPlatform as the datasource
 
