@@ -1,4 +1,4 @@
-# Dataflow schema mapping and sampling
+# Dataflow schema mapping and sampling a few rows
 Power BI dataflow workspace documentation of the dataflows and the entity schemas
 ## Use case 
 Imagine you have a Power BI workspace with dozens of dataflows created by your team. Some of these dataflows might be using sensitive data that should be restricted for the wider audience. You would like to have a high level overview of all the dataflows in that particular workspace. The overview should be able to show all the dataflows in that workspace, the entities in each of the dataflow, the columns in each of the entity , the data type of those columns and finally a few rows of the actual data from all the tables.
@@ -67,4 +67,5 @@ in
 
 ```
 
-With that, we have the data required for the overview report. Please be aware that this is a high level report only and won't be able to see every single data inside the tables.
+With that, we have the data required for the overview report. Please be aware that this is a high level report only and won't be able to see every single data inside the tables. Instead of using the Table.FirstN(), we could use Table.LastN() - to get the last N rows or use Table.SelectRows() and use a condition to generate the rows. You could very well do some rando msampling by using the index, List.Random() and Table.SelectRows() to select some random rows from the data.
+Learn more about the Table Functions from [Microsoft Learn](https://learn.microsoft.com/en-us/powerquery-m/table-functions)
